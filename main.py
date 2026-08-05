@@ -2,7 +2,7 @@ import sys
 import io
 
 # Set stdout encoding to utf-8 for Windows console support
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', line_buffering=True)
 
 from src.coordinator import run_all
 
