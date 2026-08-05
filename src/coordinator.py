@@ -28,7 +28,7 @@ def coordinate_investigation(input_filepath: str):
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=0.1, max_retries=0)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
             coord_prompt = f"Coordinator Agent dispatch plan for case {case_id}, order {claimed_order_id}: {user_msg}"
             llm.invoke(coord_prompt)
         except Exception:

@@ -79,7 +79,7 @@ def process_payment(claimed_order_id: str, expected_total_brl_from_items: float 
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=0.1, max_retries=0)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
             structured_llm = llm.with_structured_output(PaymentPayload)
             prompt = f"""You are the Payment Agent. Extract and evaluate the PaymentPayload based on this financial context:
 Claimed Order: {claimed_order_id}

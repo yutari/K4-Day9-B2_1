@@ -109,7 +109,7 @@ def process_order_and_product(claimed_order_id: str) -> OrderProductPayload:
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=0.1, max_retries=0)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
             structured_llm = llm.with_structured_output(OrderProductPayload)
             prompt = f"""You are the Order & Product Agent. Extract and evaluate the OrderProductPayload based on this order context:
 Claimed Order: {claimed_order_id}
