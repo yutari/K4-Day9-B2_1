@@ -1,5 +1,13 @@
 import sys
 import io
+import os
+try:
+    # pyrefly: ignore [missing-import]
+    from dotenv import load_dotenv
+        
+    load_dotenv()
+except ImportError:
+    pass
 
 # Set stdout encoding to utf-8 for Windows console support
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')

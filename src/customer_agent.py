@@ -62,7 +62,7 @@ def process_customer(claimed_order_id: str) -> CustomerPayload:
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=2)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=0.1, max_retries=0)
             structured_llm = llm.with_structured_output(CustomerPayload)
             prompt = f"Customer Agent analysis for order {claimed_order_id}: customer {db_data.get('customer_unique_id')}, count {db_data.get('total_orders_count')}."
             result = structured_llm.invoke(prompt)

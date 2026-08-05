@@ -94,7 +94,7 @@ def process_delivery(claimed_order_id: str) -> DeliveryPayload:
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=0.1, max_retries=0)
             structured_llm = llm.with_structured_output(DeliveryPayload)
             prompt = f"""You are the Delivery Agent. Extract and evaluate the DeliveryPayload based on this delivery timeline context:
 Claimed Order: {claimed_order_id}

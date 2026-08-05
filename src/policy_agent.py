@@ -20,7 +20,7 @@ def evaluate_policy(context: AggregatedContext) -> ResolutionOutput:
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=2)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=0.1, max_retries=0)
             prompt = f"""You are the Policy Agent for E-Commerce Dispute Resolution under policy EC_POLICY_V2.
 Analyze case context:
 Case ID: {context.case_id}
