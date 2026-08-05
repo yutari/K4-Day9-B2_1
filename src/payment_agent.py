@@ -1,6 +1,8 @@
 import os
 import pandas as pd
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
+# pyrefly: ignore [missing-import]
+from langchain_openai import ChatOpenAI
 from src.models import PaymentPayload
 
 ORDER_ITEMS_CSV_PATH = "data/olist_order_items_dataset.csv"
@@ -21,19 +23,13 @@ def get_payments_df():
         _payments_df = pd.read_csv(ORDER_PAYMENTS_CSV_PATH, usecols=['order_id', 'payment_sequential', 'payment_type', 'payment_value'])
     return _payments_df
 
-def process_payment(claimed_order_id: str, expected_total_brl_from_items: float = 0.0) -> PaymentPayload:
-    """
-    Hoàng: Đọc file order_items.csv và order_payments.csv
-    Tính tổng payment_total_brl, so sánh với expected_total_brl.
-    Tính difference_brl, xác định cờ reconciled và is_split_payment.
-    """
+def query_payment_db(claimed_order_id: str) -> Dict[str, Any]:
     items_df = get_items_df()
     payments_df = get_payments_df()
     
     target_items = items_df[items_df['order_id'] == claimed_order_id]
     target_payments = payments_df[payments_df['order_id'] == claimed_order_id].sort_values('payment_sequential')
 
-    # Item total & Freight total
     if target_items.empty:
         item_total_brl = None
         freight_total_brl = None
@@ -43,7 +39,6 @@ def process_payment(claimed_order_id: str, expected_total_brl_from_items: float 
         freight_total_brl = round(float(target_items['freight_value'].sum()), 2)
         expected_total_brl = round(item_total_brl + freight_total_brl, 2)
 
-    # Payments
     if target_payments.empty:
         payment_total_brl = 0.0
         payment_types = []
@@ -56,7 +51,6 @@ def process_payment(claimed_order_id: str, expected_total_brl_from_items: float 
                 payment_types.append(str(p_type))
         payment_ids = [f"{claimed_order_id}:{row['payment_sequential']}" for _, row in target_payments.iterrows()]
 
-    # Difference & Reconciled
     if expected_total_brl is None:
         difference_brl = None
         reconciled = None
@@ -64,16 +58,46 @@ def process_payment(claimed_order_id: str, expected_total_brl_from_items: float 
         difference_brl = round(payment_total_brl - expected_total_brl, 2)
         reconciled = abs(difference_brl) <= 0.10
 
-    is_split_payment = len(target_payments) >= 2
+    return {
+        "item_total_brl": item_total_brl,
+        "freight_total_brl": freight_total_brl,
+        "expected_total_brl": expected_total_brl,
+        "payment_total_brl": payment_total_brl,
+        "difference_brl": difference_brl,
+        "reconciled": reconciled,
+        "is_split_payment": len(target_payments) >= 2,
+        "payment_types": payment_types,
+        "payment_ids": payment_ids
+    }
 
-    return PaymentPayload(
-        item_total_brl=item_total_brl,
-        freight_total_brl=freight_total_brl,
-        expected_total_brl=expected_total_brl,
-        payment_total_brl=payment_total_brl,
-        difference_brl=difference_brl,
-        reconciled=reconciled,
-        is_split_payment=is_split_payment,
-        payment_types=payment_types,
-        payment_ids=payment_ids
-    )
+def process_payment(claimed_order_id: str, expected_total_brl_from_items: float = 0.0) -> PaymentPayload:
+    """
+    Payment Agent LLM: Sử dụng LLM Agent (gpt-4o-mini) phân tích thanh toán và đối soát tài chính.
+    """
+    db_data = query_payment_db(claimed_order_id)
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if api_key and not api_key.startswith("sk-proj-placeholder"):
+        try:
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+            structured_llm = llm.with_structured_output(PaymentPayload)
+            prompt = f"""You are the Payment Agent. Extract and evaluate the PaymentPayload based on this financial context:
+Claimed Order: {claimed_order_id}
+Item Total BRL: {db_data.get('item_total_brl')}
+Freight Total BRL: {db_data.get('freight_total_brl')}
+Expected Total BRL: {db_data.get('expected_total_brl')}
+Payment Total BRL: {db_data.get('payment_total_brl')}
+Difference BRL: {db_data.get('difference_brl')}
+Reconciled: {db_data.get('reconciled')}
+Is Split Payment: {db_data.get('is_split_payment')}
+Payment Types: {db_data.get('payment_types')}
+Payment IDs: {db_data.get('payment_ids')}
+
+Construct the structured PaymentPayload."""
+            result = structured_llm.invoke(prompt)
+            if isinstance(result, PaymentPayload):
+                return result
+        except Exception:
+            pass
+
+    return PaymentPayload(**db_data)

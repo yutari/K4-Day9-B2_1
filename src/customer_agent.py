@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 from typing import Dict, Any
+# pyrefly: ignore [missing-import]
+from langchain_openai import ChatOpenAI
 from src.models import CustomerPayload
 
 ORDERS_CSV_PATH = "data/olist_orders_dataset.csv"
@@ -21,7 +23,7 @@ def get_customers_df():
         _customers_df = pd.read_csv(CUSTOMERS_CSV_PATH, usecols=['customer_id', 'customer_unique_id'])
     return _customers_df
 
-def get_customer_orders_data(claimed_order_id: str) -> Dict[str, Any]:
+def query_customer_db(claimed_order_id: str) -> Dict[str, Any]:
     orders_df = get_orders_df()
     customers_df = get_customers_df()
     
@@ -51,19 +53,34 @@ def get_customer_orders_data(claimed_order_id: str) -> Dict[str, Any]:
 
 def process_customer(claimed_order_id: str) -> CustomerPayload:
     """
-    Customer Agent: Phân tích danh tính và lịch sử mua hàng của khách.
+    Customer Agent LLM: Sử dụng LLM Agent (gpt-4o-mini) phân tích bối cảnh khách hàng.
     """
-    data = get_customer_orders_data(claimed_order_id)
-    if "error" in data:
+    db_data = query_customer_db(claimed_order_id)
+    if "error" in db_data:
         return CustomerPayload()
-    
-    unique_id = data.get("customer_unique_id")
-    related = data.get("related_order_ids", [])[:5]
-    total_count = data.get("total_orders_count", 0)
-    is_repeat = total_count >= 2
-    
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if api_key and not api_key.startswith("sk-proj-placeholder"):
+        try:
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+            structured_llm = llm.with_structured_output(CustomerPayload)
+            prompt = f"""You are the Customer Agent. Extract and evaluate the CustomerPayload based on this database context:
+Claimed Order: {claimed_order_id}
+Customer Unique ID: {db_data.get('customer_unique_id')}
+Related Order IDs: {db_data.get('related_order_ids')}
+Total Orders Count: {db_data.get('total_orders_count')}
+
+Rules:
+- is_repeat_customer is true if total_orders_count >= 2.
+- related_order_ids must be at most 5 order IDs."""
+            result = structured_llm.invoke(prompt)
+            if isinstance(result, CustomerPayload):
+                return result
+        except Exception:
+            pass
+
     return CustomerPayload(
-        customer_unique_id=unique_id,
-        related_order_ids=related,
-        is_repeat_customer=is_repeat
+        customer_unique_id=db_data.get("customer_unique_id"),
+        related_order_ids=db_data.get("related_order_ids", [])[:5],
+        is_repeat_customer=db_data.get("total_orders_count", 0) >= 2
     )
