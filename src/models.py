@@ -48,6 +48,8 @@ class OrderProductPayload(BaseModel):
     order_status: str = "" # Thêm order_status để check canceled/unavailable
 
 class PaymentPayload(BaseModel):
+    item_total_brl: Optional[float] = None
+    freight_total_brl: Optional[float] = None
     expected_total_brl: Optional[float] = None
     payment_total_brl: Optional[float] = None
     difference_brl: Optional[float] = None
