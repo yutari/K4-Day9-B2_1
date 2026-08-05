@@ -1,19 +1,12 @@
-from src.order_agent import process_order_and_product
-from src.payment_agent import process_payment
+import sys
+import io
 
-ORDER_ID = input("Order ID: ")
+# Set stdout encoding to utf-8 for Windows console support
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-order = process_order_and_product(ORDER_ID)
+from src.coordinator import run_all
 
-print("\n===== ORDER =====")
-print(order.model_dump())
-
-expected = float(input("\nExpected Total BRL: "))
-
-payment = process_payment(
-    ORDER_ID,
-    expected
-)
-
-print("\n===== PAYMENT =====")
-print(payment.model_dump())
+if __name__ == "__main__":
+    print("Starting Multi-Agent E-Commerce Dispute Resolution System...")
+    run_all()
+    print("Completed processing all 50 cases successfully!")

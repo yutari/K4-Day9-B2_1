@@ -1,19 +1,7 @@
 import os
 import pandas as pd
 from typing import Dict, Any
-# pyrefly: ignore [missing-import]
-from dotenv import load_dotenv
-# pyrefly: ignore [missing-import]
-from langchain_core.tools import tool
-# pyrefly: ignore [missing-import]
-from langchain_openai import ChatOpenAI
-# pyrefly: ignore [missing-import]
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-# pyrefly: ignore [missing-import]
-from langchain_core.prompts import ChatPromptTemplate
 from src.models import CustomerPayload
-
-load_dotenv()
 
 ORDERS_CSV_PATH = "data/olist_orders_dataset.csv"
 CUSTOMERS_CSV_PATH = "data/olist_customers_dataset.csv"
@@ -33,12 +21,7 @@ def get_customers_df():
         _customers_df = pd.read_csv(CUSTOMERS_CSV_PATH, usecols=['customer_id', 'customer_unique_id'])
     return _customers_df
 
-@tool
 def get_customer_orders_data(claimed_order_id: str) -> Dict[str, Any]:
-    """
-    Look up the customer's unique ID and all their related orders.
-    Returns the customer_unique_id, a list of related_order_ids (excluding the claimed one), and total_orders_count.
-    """
     orders_df = get_orders_df()
     customers_df = get_customers_df()
     
@@ -61,38 +44,26 @@ def get_customer_orders_data(claimed_order_id: str) -> Dict[str, Any]:
     related_order_ids = [oid for oid in all_order_ids if oid != claimed_order_id][:5]
     
     return {
-        "customer_unique_id": customer_unique_id,
+        "customer_unique_id": str(customer_unique_id),
         "related_order_ids": related_order_ids,
         "total_orders_count": len(all_order_ids)
     }
 
 def process_customer(claimed_order_id: str) -> CustomerPayload:
     """
-    Router Agent for Customer Domain.
-    Uses LLM to evaluate customer context based on tool output.
+    Customer Agent: Phân tích danh tính và lịch sử mua hàng của khách.
     """
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    structured_llm = llm.with_structured_output(CustomerPayload)
+    data = get_customer_orders_data(claimed_order_id)
+    if "error" in data:
+        return CustomerPayload()
     
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Customer Agent in an e-commerce dispute resolution system.
-Your task is to extract customer context for a given order ID.
-You must use the provided tools to query the database.
-
-Rules for CustomerPayload:
-- is_repeat_customer is true if total_orders_count >= 2.
-- related_order_ids must be at most 5 orders.
-
-In your final answer, detail the customer_unique_id, related_order_ids, and whether they are a repeat customer.
-"""),
-        ("human", "Evaluate order ID: {claimed_order_id}"),
-        ("placeholder", "{agent_scratchpad}")
-    ])
+    unique_id = data.get("customer_unique_id")
+    related = data.get("related_order_ids", [])[:5]
+    total_count = data.get("total_orders_count", 0)
+    is_repeat = total_count >= 2
     
-    agent = create_tool_calling_agent(llm, [get_customer_orders_data], prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=[get_customer_orders_data], verbose=False)
-    
-    result = agent_executor.invoke({"claimed_order_id": claimed_order_id})
-    
-    final_output = structured_llm.invoke(f"Extract the customer payload from this result: {result['output']}")
-    return final_output
+    return CustomerPayload(
+        customer_unique_id=unique_id,
+        related_order_ids=related,
+        is_repeat_customer=is_repeat
+    )
