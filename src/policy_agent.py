@@ -138,9 +138,15 @@ Evaluate and summarize primary issue, root cause code, refund amount, and respon
 
     evidence_ids: List[str] = [f"order:{claimed_order_id}"]
     for item_id in ord_ctx.item_ids[:5]:
-        evidence_ids.append(f"item:{item_id}" if not item_id.startswith("item:") else item_id)
+        if ":" not in str(item_id):
+            evidence_ids.append(f"item:{claimed_order_id}:{item_id}")
+        else:
+            evidence_ids.append(f"item:{item_id}" if not str(item_id).startswith("item:") else str(item_id))
     for pay_id in pay_ctx.payment_ids[:5]:
-        evidence_ids.append(f"payment:{pay_id}" if not pay_id.startswith("payment:") else pay_id)
+        if ":" not in str(pay_id):
+            evidence_ids.append(f"payment:{claimed_order_id}:{pay_id}")
+        else:
+            evidence_ids.append(f"payment:{pay_id}" if not str(pay_id).startswith("payment:") else str(pay_id))
     for resp in responsible_parties:
         if resp.get("party_type") == PartyType.SELLER.value:
             seller_ev = f"seller:{resp.get('party_id')}"
