@@ -27,6 +27,7 @@ class CaseStatus(str, Enum):
 class PartyType(str, Enum):
     SELLER = "seller"
     LOGISTICS = "logistics"
+    LOGISTICS_PROVIDER = "logistics_provider"
     CUSTOMER = "customer"
     PLATFORM = "platform"
     UNKNOWN = "unknown"

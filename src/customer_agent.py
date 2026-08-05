@@ -71,9 +71,11 @@ def process_customer(claimed_order_id: str) -> CustomerPayload:
         try:
             llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
             structured_llm = llm.with_structured_output(CustomerPayload)
-            prompt = f"Customer Agent analysis for order {claimed_order_id}: customer {db_data.get('customer_unique_id')}, count {db_data.get('total_orders_count')}."
+            prompt = f"Customer Agent analysis for order {claimed_order_id}: customer {db_data.get('customer_unique_id')}, count {db_data.get('total_orders_count')}, related orders {db_data.get('related_order_ids')}."
             result = structured_llm.invoke(prompt)
-            if isinstance(result, CustomerPayload):
+            if isinstance(result, CustomerPayload) and result.customer_unique_id:
+                if not result.related_order_ids and db_data.get("related_order_ids"):
+                    result.related_order_ids = db_data.get("related_order_ids", [])[:5]
                 return result
         except Exception:
             pass

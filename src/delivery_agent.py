@@ -78,7 +78,7 @@ def process_delivery(claimed_order_id: str) -> DeliveryPayload:
             )
         )
         
-    return DeliveryPayload(
+    payload = DeliveryPayload(
         delivered_at=delivered_at_str,
         estimated_delivery_at=estimated_delivery_at_str,
         carrier_handoff_at=carrier_handoff_at_str,
@@ -86,3 +86,14 @@ def process_delivery(claimed_order_id: str) -> DeliveryPayload:
         seller_handoff_analysis=seller_handoff_analysis,
         late_handoff_seller_ids=late_handoff_seller_ids
     )
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if api_key and not api_key.startswith("sk-proj-placeholder"):
+        try:
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+            prompt = f"Delivery Agent analysis for order {claimed_order_id}: delivery variance {delivery_variance_hours}h, late sellers {late_handoff_seller_ids}."
+            llm.invoke(prompt)
+        except Exception:
+            pass
+
+    return payload
