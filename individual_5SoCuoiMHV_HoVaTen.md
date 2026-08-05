@@ -1,19 +1,19 @@
 # BÁO CÁO CÁ NHÂN LAB DAY 09 - MULTI-AGENT E-COMMERCE DISPUTE RESOLUTION
 
-**Họ và tên**: [Nhập Họ và Tên của bạn]  
-**Mã học viên (MHV)**: [Nhập 5 số cuối MHV]  
+**Họ và tên**: Phạm Đăng  
+**Mã học viên (MHV)**: 01766  
 **Nhóm**: B2_1  
-**Vai trò trong dự án**: [Chọn 1 trong 4: Core Policy Analyst / Orchestration & Verifier / Data Analyst (Order & Payment) / Data Analyst (Customer & Delivery)]  
+**Vai trò trong dự án**: Orchestration & Verifier  
 
 ---
 
 ## 1. Công việc được phân công (Assigned Responsibilities)
 
-- **Module phụ trách**: [Ví dụ: `src/policy_agent.py` và `src/models.py`]
+- **Module phụ trách**: `src/coordinator.py` và `src/verifier_agent.py`
 - **Chi tiết nhiệm vụ**:
-  - Đóng góp vào việc thiết kế cấu trúc dữ liệu A2A Envelope Protocol.
-  - Phân tích và chuyển thể quy tắc nghiệp vụ `EC_POLICY_V2` thành mã nguồn.
-  - Phối hợp kiểm thử và sửa lỗi logic khi chạy 50 ticket khiếu nại thực tế.
+  - Đóng góp vào việc thiết kế cấu trúc dữ liệu A2A Envelope Protocol và luồng Hand-off.
+  - Phân tích và xây dựng Coordinator Agent điều phối 5 Sub-Agents thu thập context.
+  - Xây dựng Verifier Agent kiểm tra tính hợp lệ của schema, ID grounding và xuất dữ liệu ra `output/`.
 
 ---
 
