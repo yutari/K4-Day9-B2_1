@@ -20,7 +20,7 @@ Ngân phụ trách định nghĩa cấu trúc dữ liệu chung để 3 người
   1. **Tạo `models.py`**: Khai báo các class lưu trữ Payload theo chuẩn `architecture.md` (ví dụ: `CustomerPayload`, `PaymentPayload`, `ResolutionOutput`...).
   2. **Viết hàm `evaluate_policy(context: AggregatedContext) -> ResolutionOutput`**:
      * Nhận đầu vào là cục data tổng hợp (từ Hoàng và Hiếu gửi lên qua Đăng).
-     * Áp dụng luật `EC_POLICY_V2`: Ưu tiên tuyệt đối (canceled -> unavailable -> late seller -> late logistics -> valid split...).
+     * Áp dụng luật `input`: Ưu tiên tuyệt đối (canceled -> unavailable -> late seller -> late logistics -> valid split...).
      * Xác định Secondary issues đúng thứ tự (multi_item -> multi_seller...).
      * Tạo danh sách `evidence_ids` đúng format string.
 * **Đầu vào (Input)**: Aggregated data từ các Agent khác.
