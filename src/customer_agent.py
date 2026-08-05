@@ -5,6 +5,8 @@ from typing import Dict, Any
 from langchain_openai import ChatOpenAI
 from src.models import CustomerPayload
 
+load_dotenv()
+
 ORDERS_CSV_PATH = "data/olist_orders_dataset.csv"
 CUSTOMERS_CSV_PATH = "data/olist_customers_dataset.csv"
 
@@ -46,7 +48,7 @@ def query_customer_db(claimed_order_id: str) -> Dict[str, Any]:
     related_order_ids = [oid for oid in all_order_ids if oid != claimed_order_id][:5]
     
     return {
-        "customer_unique_id": str(customer_unique_id),
+        "customer_unique_id": customer_unique_id,
         "related_order_ids": related_order_ids,
         "total_orders_count": len(all_order_ids)
     }

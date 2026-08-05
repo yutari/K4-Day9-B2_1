@@ -1,10 +1,12 @@
 import os
 import pandas as pd
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from datetime import datetime
 # pyrefly: ignore [missing-import]
 from langchain_openai import ChatOpenAI
 from src.models import DeliveryPayload, SellerHandoff
+
+load_dotenv()
 
 ORDERS_CSV_PATH = "data/olist_orders_dataset.csv"
 ORDER_ITEMS_CSV_PATH = "data/olist_order_items_dataset.csv"
@@ -46,11 +48,9 @@ def query_delivery_db(claimed_order_id: str) -> Dict[str, Any]:
     estimated_delivery_at = target_order.iloc[0]['order_estimated_delivery_date']
     carrier_handoff_at = target_order.iloc[0]['order_delivered_carrier_date']
     
-    delivered_at_str = str(delivered_at) if pd.notna(delivered_at) else None
-    estimated_delivery_at_str = str(estimated_delivery_at) if pd.notna(estimated_delivery_at) else None
-    carrier_handoff_at_str = str(carrier_handoff_at) if pd.notna(carrier_handoff_at) else None
-    
-    delivery_variance_hours = calculate_hours_difference(delivered_at_str, estimated_delivery_at_str)
+    delivered_at = delivered_at if pd.notna(delivered_at) else None
+    estimated_delivery_at = estimated_delivery_at if pd.notna(estimated_delivery_at) else None
+    carrier_handoff_at = carrier_handoff_at if pd.notna(carrier_handoff_at) else None
     
     target_items = items_df[items_df['order_id'] == claimed_order_id]
     seller_limits_raw = target_items.groupby('seller_id')['shipping_limit_date'].min().to_dict()

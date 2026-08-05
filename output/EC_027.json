@@ -45,7 +45,7 @@
     "delivery_variance_hours": 378.81,
     "seller_handoff_analysis": [
       {
-        "seller_id": "620c87c171fb2a6dd6e8bb4dec959fc6",
+        "seller_id": "unknown",
         "shipping_limit_at": "2018-03-19 13:30:29",
         "handoff_variance_hours": -114.05,
         "late_handoff": false

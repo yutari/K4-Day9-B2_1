@@ -41,7 +41,7 @@
   "delivery_analysis": {
     "delivered_at": "2017-12-11 22:24:54",
     "estimated_delivery_at": "2017-12-07 00:00:00",
-    "carrier_handoff_at": "2017-11-22 00:52:52",
+    "carrier_handoff_at": null,
     "delivery_variance_hours": 118.42,
     "seller_handoff_analysis": [
       {
