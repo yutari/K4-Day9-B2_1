@@ -1,6 +1,0 @@
-{
-  "model_name": "gpt-4o-mini",
-  "parameter_size": "< 10B",
-  "framework": "OpenAI API / Python Pandas Engine",
-  "runtime": "Python 3.12"
-}
