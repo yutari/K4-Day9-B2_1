@@ -5,7 +5,12 @@ from typing import Dict, Any
 from langchain_openai import ChatOpenAI
 from src.models import CustomerPayload
 
-load_dotenv()
+try:
+    # pyrefly: ignore [missing-import]
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 ORDERS_CSV_PATH = "data/olist_orders_dataset.csv"
 CUSTOMERS_CSV_PATH = "data/olist_customers_dataset.csv"

@@ -46,7 +46,14 @@
     "estimated_delivery_at": "2017-12-19 00:00:00",
     "carrier_handoff_at": "2017-12-05 01:29:43",
     "delivery_variance_hours": 185.7,
-    "seller_handoff_analysis": [],
+    "seller_handoff_analysis": [
+      {
+        "seller_id": "8160255418d5aaa7dbdc9f4c64ebda44",
+        "shipping_limit_at": "2017-11-30 09:39:31",
+        "handoff_variance_hours": 111.84,
+        "late_handoff": true
+      }
+    ],
     "late_handoff_seller_ids": [
       "8160255418d5aaa7dbdc9f4c64ebda44"
     ]

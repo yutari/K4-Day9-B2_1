@@ -90,7 +90,7 @@ def verify_and_save(resolution: ResolutionOutput, case_id: str):
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(final_output, f, ensure_ascii=False, indent=2)
         
-    trace_path = "logging/trace.jsonl"
+    trace_path = "trace.jsonl"
     trace_entry = {
         "timestamp": datetime.now().isoformat(),
         "case_id": case_id,
@@ -99,7 +99,9 @@ def verify_and_save(resolution: ResolutionOutput, case_id: str):
         "case_status": final_output["case_assessment"]["case_status"]
     }
     
-    with open(trace_path, 'a', encoding='utf-8') as f:
+    with open("trace.jsonl", 'a', encoding='utf-8') as f:
+        f.write(json.dumps(trace_entry) + '\n')
+    with open("logging/trace.jsonl", 'a', encoding='utf-8') as f:
         f.write(json.dumps(trace_entry) + '\n')
     
     print(f"[{case_id}] Đã verify và lưu file JSON thành công.")

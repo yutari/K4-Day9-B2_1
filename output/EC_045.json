@@ -43,7 +43,7 @@
   "delivery_analysis": {
     "delivered_at": "2018-05-03 19:11:31",
     "estimated_delivery_at": "2018-05-22 00:00:00",
-    "carrier_handoff_at": null,
+    "carrier_handoff_at": "2018-05-02 14:24:00",
     "delivery_variance_hours": -436.81,
     "seller_handoff_analysis": [
       {
