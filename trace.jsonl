@@ -55,3 +55,9 @@
 {"timestamp": "2026-08-05T17:32:03.234523", "case_id": "EC_005", "status": "VERIFIED_AND_SAVED", "primary_issue": "late_delivery_logistics", "case_status": "action_required"}
 {"timestamp": "2026-08-05T17:32:28.891485", "case_id": "EC_006", "status": "VERIFIED_AND_SAVED", "primary_issue": "late_delivery_seller", "case_status": "action_required"}
 {"timestamp": "2026-08-05T17:32:47.770104", "case_id": "EC_007", "status": "VERIFIED_AND_SAVED", "primary_issue": "late_delivery_logistics", "case_status": "action_required"}
+{"timestamp": "2026-08-05T17:33:08.535136", "case_id": "EC_008", "status": "VERIFIED_AND_SAVED", "primary_issue": "valid_split_payment", "case_status": "no_action"}
+{"timestamp": "2026-08-05T17:33:34.763017", "case_id": "EC_009", "status": "VERIFIED_AND_SAVED", "primary_issue": "canceled_order_paid", "case_status": "action_required"}
+{"timestamp": "2026-08-05T17:33:54.259331", "case_id": "EC_010", "status": "VERIFIED_AND_SAVED", "primary_issue": "valid_split_payment", "case_status": "no_action"}
+{"timestamp": "2026-08-05T17:34:14.479186", "case_id": "EC_011", "status": "VERIFIED_AND_SAVED", "primary_issue": "canceled_order_paid", "case_status": "action_required"}
+{"timestamp": "2026-08-05T17:34:35.062135", "case_id": "EC_012", "status": "VERIFIED_AND_SAVED", "primary_issue": "unavailable_order_paid", "case_status": "action_required"}
+{"timestamp": "2026-08-05T17:34:58.020134", "case_id": "EC_013", "status": "VERIFIED_AND_SAVED", "primary_issue": "late_delivery_seller", "case_status": "action_required"}
