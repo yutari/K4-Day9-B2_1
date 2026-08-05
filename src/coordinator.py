@@ -25,35 +25,20 @@ def coordinate_investigation(input_filepath: str):
 
     print(f"[{case_id}] Coordinator LLM Agent đang tiếp nhận order: {claimed_order_id}")
 
-    # Coordinator LLM Agent Dispatch Planning
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-            coord_prompt = f"""You are the Master Coordinator Agent in an E-Commerce Dispute Resolution System.
-You received ticket {case_id} for order {claimed_order_id}.
-Customer message: "{user_msg}"
-
-Formulate a dispatch plan:
-1. Trigger Customer Agent for identity and order history.
-2. Trigger Order & Product Agent for item catalog and categories.
-3. Trigger Payment Agent for financial reconciliation.
-4. Trigger Delivery Agent for SLA timeline analysis.
-5. Handoff to Policy Agent for EC_POLICY_V2 resolution.
-6. Handoff to Verifier Agent for schema audit."""
-            
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=2)
+            coord_prompt = f"Coordinator Agent dispatch plan for case {case_id}, order {claimed_order_id}: {user_msg}"
             llm.invoke(coord_prompt)
         except Exception:
             pass
 
-    # A2A Handoff Execution Phase
-    # Step 1: Parallel Context Extraction from Domain Sub-Agents
     customer_payload = process_customer(claimed_order_id)
     order_payload = process_order_and_product(claimed_order_id)
     payment_payload = process_payment(claimed_order_id)
     delivery_payload = process_delivery(claimed_order_id)
 
-    # Step 2: Handoff Context Aggregation
     context = AggregatedContext(
         case_id=case_id,
         claimed_order_id=claimed_order_id,
@@ -63,10 +48,7 @@ Formulate a dispatch plan:
         delivery_context=delivery_payload
     )
 
-    # Step 3: Handoff to Policy Agent (LLM Engine)
     resolution = evaluate_policy(context)
-
-    # Step 4: Handoff to Verifier Agent (LLM Audit & Schema Guardrails)
     verify_and_save(resolution, case_id)
 
 def run_all():

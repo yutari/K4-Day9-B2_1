@@ -62,17 +62,9 @@ def process_customer(claimed_order_id: str) -> CustomerPayload:
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=2)
             structured_llm = llm.with_structured_output(CustomerPayload)
-            prompt = f"""You are the Customer Agent. Extract and evaluate the CustomerPayload based on this database context:
-Claimed Order: {claimed_order_id}
-Customer Unique ID: {db_data.get('customer_unique_id')}
-Related Order IDs: {db_data.get('related_order_ids')}
-Total Orders Count: {db_data.get('total_orders_count')}
-
-Rules:
-- is_repeat_customer is true if total_orders_count >= 2.
-- related_order_ids must be at most 5 order IDs."""
+            prompt = f"Customer Agent analysis for order {claimed_order_id}: customer {db_data.get('customer_unique_id')}, count {db_data.get('total_orders_count')}."
             result = structured_llm.invoke(prompt)
             if isinstance(result, CustomerPayload):
                 return result

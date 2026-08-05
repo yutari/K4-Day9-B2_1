@@ -15,17 +15,15 @@ def verify_and_save(resolution: ResolutionOutput, case_id: str):
     """
     res_dict = resolution.model_dump()
     
-    # Optional LLM Audit Check
     api_key = os.environ.get("OPENAI_API_KEY")
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=2)
             prompt = f"Verify resolution output for case {case_id}: Primary Issue = {res_dict.get('primary_issue')}, Status = {res_dict.get('case_status')}. Confirm valid."
             llm.invoke(prompt)
         except Exception:
             pass
 
-    # 1. Truncate arrays to strict schema bounds
     ae = res_dict.get('affected_entities', {})
     ae['order_ids'] = ae.get('order_ids', [])[:5]
     ae['item_ids'] = ae.get('item_ids', [])[:5]

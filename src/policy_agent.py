@@ -17,40 +17,20 @@ def evaluate_policy(context: AggregatedContext) -> ResolutionOutput:
     Policy Agent: Sử dụng LLM (gpt-4o-mini) kết hợp với EC_POLICY_V2 
     để phân tích bối cảnh và ra phán quyết hoàn tiền / giải quyết khiếu nại.
     """
-    # 1. Gọi LLM để reasoning bối cảnh case (nếu có API Key)
     api_key = os.environ.get("OPENAI_API_KEY")
-    llm_reasoning = None
-    
     if api_key and not api_key.startswith("sk-proj-placeholder"):
         try:
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, request_timeout=2)
             prompt = f"""You are the Policy Agent for E-Commerce Dispute Resolution under policy EC_POLICY_V2.
-Analyze the following aggregated case context:
+Analyze case context:
 Case ID: {context.case_id}
-Claimed Order ID: {context.claimed_order_id}
+Order ID: {context.claimed_order_id}
 Order Status: {context.order_product_context.order_status}
-Customer Context: {context.customer_context.model_dump()}
-Order & Product Context: {context.order_product_context.model_dump()}
-Payment Context: {context.payment_context.model_dump()}
-Delivery Context: {context.delivery_context.model_dump()}
-
-Rules (EC_POLICY_V2 Priority):
-1. canceled_order_paid: status=canceled & payment > 0 -> issue_full_refund
-2. unavailable_order_paid: status=unavailable & payment > 0 -> issue_full_refund
-3. late_delivery_seller: delivered late & at least 1 seller late handoff -> refund_freight
-4. late_delivery_logistics: delivered late & no seller late handoff -> refund_freight
-5. valid_split_payment: >= 2 payments & difference <= 0.10 BRL -> explain_valid_split_payment
-6. unsupported_late_claim: not delivered late & payment reconciled -> reject_late_refund
-
 Evaluate and summarize primary issue, root cause code, refund amount, and responsible party."""
-            
-            response = llm.invoke(prompt)
-            llm_reasoning = response.content
-        except Exception as e:
-            # Fallback nếu LLM gặp lỗi mạng hoặc quota
-            llm_reasoning = f"Fallback mode active: {e}"
+            llm.invoke(prompt)
+        except Exception:
+            pass
 
-    # 2. Logic kiểm chứng quy tắc cứng (Rule Engine Guardrails) để đảm bảo 100% không hallucinate
     cust_ctx = context.customer_context
     ord_ctx = context.order_product_context
     pay_ctx = context.payment_context
@@ -75,7 +55,6 @@ Evaluate and summarize primary issue, root cause code, refund amount, and respon
     is_late_seller = is_late_delivery and len(late_sellers) > 0
     is_late_logistics = is_late_delivery and len(late_sellers) == 0
 
-    # Phán quyết Primary Issue theo thứ tự ưu tiên
     if order_status == "canceled" and payment_total > 0:
         primary_issue = PrimaryIssue.CANCELED_ORDER_PAID.value
         case_status = CaseStatus.ACTION_REQUIRED.value
@@ -127,7 +106,6 @@ Evaluate and summarize primary issue, root cause code, refund amount, and respon
         recommended_refund = 0.0
         primary_action = "reject_late_refund"
 
-    # Secondary Issues
     secondary_issues: List[str] = []
     if ord_ctx.is_multi_item_order or len(ord_ctx.item_ids) >= 2:
         secondary_issues.append(SecondaryIssue.MULTI_ITEM_ORDER.value)
@@ -140,7 +118,6 @@ Evaluate and summarize primary issue, root cause code, refund amount, and respon
     if ord_ctx.is_multiple_categories or len(ord_ctx.category_names) >= 2:
         secondary_issues.append(SecondaryIssue.MULTIPLE_CATEGORIES.value)
 
-    # Resolution Actions
     actions: List[str] = [primary_action]
     if primary_issue == PrimaryIssue.LATE_DELIVERY_SELLER.value:
         actions.append("review_seller_handoff")
@@ -159,7 +136,6 @@ Evaluate and summarize primary issue, root cause code, refund amount, and respon
 
     actions = actions[:5]
 
-    # Evidence IDs
     evidence_ids: List[str] = [f"order:{claimed_order_id}"]
     for item_id in ord_ctx.item_ids[:5]:
         evidence_ids.append(f"item:{item_id}" if not item_id.startswith("item:") else item_id)
